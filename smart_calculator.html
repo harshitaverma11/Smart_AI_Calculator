@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart AI Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='smart_calculator.css') }}" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="card">
+        <div class="header">
+          <div class="title-block">
+            <h1>Smart AI Calculator</h1>
+            <p>Type any math question. Get just the final answer.</p>
+          </div>
+          <div class="badge">AI powered</div>
+        </div>
+
+        <form id="calc-form">
+          <div class="field">
+            <label for="question">Question</label>
+            <input
+              id="question"
+              type="text"
+              placeholder="e.g. (3.2 + 5.8) × 2 ÷ 4"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="actions">
+            <p class="hint">
+              Press <strong>Enter</strong> or click <strong>Calculate</strong>.
+            </p>
+            <div class="button-group">
+              <button type="button" id="clear-button" class="clear-btn">
+                Clear
+              </button>
+              <button type="submit" id="calc-button">
+                <span class="dot"></span>
+                Calculate
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="answer-block">
+          <div class="answer-title">
+            <span class="answer-title-dot"></span>
+            <span>Answer</span>
+          </div>
+          <div id="answer" class="answer-value answer-placeholder">
+            Waiting for a question…
+          </div>
+          <div id="status" class="status"></div>
+        </div>
+
+        <!--<div class="footer">
+          <span>Uses your OpenAI API key on the server.</span>
+          <span>No key is exposed in the browser.</span>
+        </div>-->
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("calc-form");
+      const input = document.getElementById("question");
+      const button = document.getElementById("calc-button");
+      const clearButton = document.getElementById("clear-button");
+      const answerEl = document.getElementById("answer");
+      const statusEl = document.getElementById("status");
+
+      function clearAll() {
+        input.value = "";
+        answerEl.textContent = "Waiting for a question…";
+        answerEl.classList.add("answer-placeholder");
+        statusEl.textContent = "";
+        statusEl.classList.remove("error");
+        input.focus();
+      }
+
+      clearButton.addEventListener("click", clearAll);
+
+      function setLoading(isLoading) {
+        if (isLoading) {
+          button.disabled = true;
+          clearButton.disabled = true;
+          button.innerHTML = '<span class="dot"></span>Thinking…';
+          statusEl.textContent =
+            "Thinking for the final answer…";
+          statusEl.classList.remove("error");
+          answerEl.classList.remove("answer-placeholder");
+        } else {
+          button.disabled = false;
+          clearButton.disabled = false;
+          button.innerHTML = '<span class="dot"></span>Calculate';
+        }
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const question = input.value.trim();
+        if (!question) {
+          statusEl.textContent = "Please enter a math question first.";
+          statusEl.classList.add("error");
+          return;
+        }
+
+        setLoading(true);
+        statusEl.classList.remove("error");
+
+        try {
+          const response = await fetch("/api/calc", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ question }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Unknown error");
+          }
+
+          answerEl.textContent = data.answer || "No answer returned.";
+          answerEl.classList.remove("answer-placeholder");
+          statusEl.textContent = "Done.";
+        } catch (error) {
+          answerEl.textContent = "—";
+          answerEl.classList.add("answer-placeholder");
+          statusEl.textContent = "Error: " + error.message;
+          statusEl.classList.add("error");
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      // Focus the input when the page loads
+      window.addEventListener("load", () => {
+        input.focus();
+      });
+    </script>
+  </body>
+</html>
