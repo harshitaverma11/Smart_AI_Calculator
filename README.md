@@ -68,5 +68,5 @@ http://127.0.0.1:5000
 📸 Screenshots
 
 ![Smart_calculator Home page](https://github.com/harshitaverma11/Smart_AI_Calculator/blob/d306608e38353013bb8a5c727ce3ed34378971c4/Screenshot%202026-01-20%20204450.png)
-![Calculation Result Page]()
+![Calculation Result Page](https://github.com/harshitaverma11/Smart_AI_Calculator/blob/4ad00f65167e4ef4f9eca07153246315a561b8dc/Screenshot%202026-01-20%20204435.png)
 
